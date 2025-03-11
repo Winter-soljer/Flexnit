@@ -62,13 +62,35 @@ export async function getTrailer(mediaType: 'movie' | 'tv', id: number) {
 }
 
 export async function search(query: string, mediaType?: 'movie' | 'tv') {
-  const { data } = await tmdb.get('/search/multi', {
-    params: {
-      query,
-      ...(mediaType && { include_adult: false })
-    }
+  // First search for keywords
+  const { data: keywordData } = await tmdb.get('/search/keyword', {
+    params: { query }
   });
-  return data.results;
+
+  // Get the first few relevant keywords
+  const keywords = keywordData.results.slice(0, 3).map((k: any) => k.id);
+
+  // Search for media with these keywords
+  const searchPromises = keywords.map(async (keywordId: number) => {
+    const { data: movieData } = await tmdb.get('/discover/movie', {
+      params: {
+        with_keywords: keywordId,
+        include_adult: false
+      }
+    });
+    const { data: tvData } = await tmdb.get('/discover/tv', {
+      params: {
+        with_keywords: keywordId,
+        include_adult: false
+      }
+    });
+    return [...movieData.results, ...tvData.results];
+  });
+
+  const results = await Promise.all(searchPromises);
+  return results.flat().filter((item: any) => 
+    item.poster_path && item.backdrop_path
+  );
 }
 
 export async function getGenres(mediaType: 'movie' | 'tv') {
@@ -83,11 +105,28 @@ export async function getSimilar(mediaType: 'movie' | 'tv', id: number) {
 
 export async function getTVSeasons(id: number) {
   const { data } = await tmdb.get(`/tv/${id}`);
-  return data.seasons.map((season: any) => ({
-    season_number: season.season_number,
-    name: season.name,
-    episodes: season.episodes || []
-  }));
+  const seasons = data.seasons || [];
+
+  // Fetch episodes for each season
+  const seasonsWithEpisodes = await Promise.all(
+    seasons.map(async (season: any) => {
+      const { data: seasonData } = await tmdb.get(
+        `/tv/${id}/season/${season.season_number}`
+      );
+      return {
+        season_number: season.season_number,
+        name: season.name,
+        episodes: seasonData.episodes.map((ep: any) => ({
+          episode_number: ep.episode_number,
+          name: ep.name,
+          overview: ep.overview,
+          still_path: ep.still_path
+        }))
+      };
+    })
+  );
+
+  return seasonsWithEpisodes;
 }
 
 export async function getByGenre(mediaType: 'movie' | 'tv', genreId: number) {
