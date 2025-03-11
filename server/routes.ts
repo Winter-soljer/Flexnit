@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { search } from "./tmdb";
+import { search, type TMDBMovie, type TMDBTVShow } from "./tmdb";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/trending/:type', async (req, res) => {
@@ -47,12 +47,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Search query required' });
       }
       const results = await search(q);
-      const media = await Promise.all(
+      const mediaResults = await Promise.all(
         results
-          .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
-          .map(item => storage.processAndCacheMedia(item, item.media_type))
+          .filter((item: any) => {
+            return item.media_type === 'movie' || item.media_type === 'tv';
+          })
+          .map((item: any) => {
+            return storage.processAndCacheMedia(item, item.media_type);
+          })
       );
-      res.json(media);
+      res.json(mediaResults.filter(Boolean));
     } catch (error) {
       res.status(500).json({ message: 'Search failed' });
     }
