@@ -19,10 +19,10 @@ export default function Navbar() {
       <div className="container flex h-14 items-center">
         <Link href="/">
           <a className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold text-primary">NETFLIX</h1>
+            <h1 className="text-2xl font-bold text-primary">FLEXNIT</h1>
           </a>
         </Link>
-        
+
         <div className="flex space-x-6 ml-6">
           <Link href="/">
             <a className="text-sm font-medium transition-colors hover:text-primary">
