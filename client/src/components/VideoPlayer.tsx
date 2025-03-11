@@ -15,6 +15,20 @@ const securityBypassScript = `
   // Override security policies for mixed content
   if (window.top !== window.self) {
     document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.remove();
+
+    // Add meta tags to allow mixed content
+    const metaTag = document.createElement('meta');
+    metaTag.setAttribute('http-equiv', 'Content-Security-Policy');
+    metaTag.setAttribute('content', 'upgrade-insecure-requests');
+    document.head.appendChild(metaTag);
+
+    // Disable SSL verification warnings
+    const origConsoleWarn = console.warn;
+    console.warn = function(...args) {
+      if (!args[0]?.includes('SSL certificate')) {
+        origConsoleWarn.apply(console, args);
+      }
+    };
   }
 
   // Override common ad detection methods
@@ -88,8 +102,8 @@ export default function VideoPlayer({ media, season, episode, onBack }: VideoPla
           src={getPlayerUrl()}
           className="absolute inset-0 w-full h-full"
           allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-forms"
+          allow="autoplay; encrypted-media; picture-in-picture; mixed-content"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-mixed-content allow-presentation"
         />
       </div>
     </div>
