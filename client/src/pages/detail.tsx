@@ -2,13 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPreview from "@/components/VideoPreview";
+import { Media } from "@shared/schema";
 
 export default function Detail() {
   const [match, params] = useRoute("/detail/:id");
   const id = params?.id;
 
-  const { data: media, isLoading } = useQuery({
-    queryKey: ["/api/media", id],
+  const { data: media, isLoading } = useQuery<Media>({
+    queryKey: [`/api/media/${id}`],
     enabled: !!id,
   });
 
@@ -17,7 +18,11 @@ export default function Detail() {
   }
 
   if (!media) {
-    return <div>Media not found</div>;
+    return (
+      <div className="container pt-8">
+        <h1 className="text-4xl font-bold">Media not found</h1>
+      </div>
+    );
   }
 
   return (
@@ -38,14 +43,14 @@ export default function Detail() {
             alt={media.title}
             className="rounded-lg shadow-xl"
           />
-          
+
           <div>
             <h1 className="text-4xl font-bold mb-4">{media.title}</h1>
             <p className="text-lg mb-6">{media.overview}</p>
-            
+
             {media.trailerKey && (
               <div className="aspect-video">
-                <VideoPreview videoId={media.trailerKey} />
+                <VideoPreview media={media} />
               </div>
             )}
           </div>

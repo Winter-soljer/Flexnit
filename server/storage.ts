@@ -7,6 +7,7 @@ export interface IStorage {
   getPopularMedia(type: 'movie' | 'tv'): Promise<Media[]>;
   searchMedia(query: string): Promise<Media[]>;
   cacheMedia(media: InsertMedia): Promise<Media>;
+  processAndCacheMedia(tmdbMedia: TMDBMovie | TMDBTVShow, type: 'movie' | 'tv'): Promise<Media>;
 }
 
 export class MemStorage implements IStorage {
@@ -58,7 +59,7 @@ export class MemStorage implements IStorage {
     return media;
   }
 
-  private async processAndCacheMedia(tmdbMedia: TMDBMovie | TMDBTVShow, type: 'movie' | 'tv'): Promise<Media> {
+  async processAndCacheMedia(tmdbMedia: TMDBMovie | TMDBTVShow, type: 'movie' | 'tv'): Promise<Media> {
     const trailerKey = await getTrailer(type, tmdbMedia.id);
 
     const media: InsertMedia = {
