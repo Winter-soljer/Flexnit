@@ -35,7 +35,7 @@ export default function MediaCard({ media }: MediaCardProps) {
     >
       <Card className="overflow-hidden cursor-pointer transition-transform duration-200 group-hover:scale-110 group-hover:z-10">
         {isHovered && media.trailerKey ? (
-          <VideoPreview videoId={media.trailerKey} />
+          <VideoPreview media={media} />
         ) : (
           <img
             src={`https://image.tmdb.org/t/p/w500${media.posterPath}`}
