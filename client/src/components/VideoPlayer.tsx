@@ -7,8 +7,13 @@ interface VideoPlayerProps {
   episode?: number;
 }
 
-// Anti-adblock detection measures
-const antiAdblockScript = `
+// Enhanced anti-adblock and mixed content handling
+const securityBypassScript = `
+  // Override security policies for mixed content
+  if (window.top !== window.self) {
+    document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.remove();
+  }
+
   // Override common ad detection methods
   window.google_ad_status = 1;
   window.google_ad_client = true;
@@ -37,15 +42,15 @@ export default function VideoPlayer({ media, season, episode }: VideoPlayerProps
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    // Inject anti-adblock script into iframe
+    // Inject security bypass script into iframe
     const iframe = iframeRef.current;
     if (iframe?.contentWindow) {
       try {
         const script = document.createElement('script');
-        script.textContent = antiAdblockScript;
+        script.textContent = securityBypassScript;
         iframe.contentWindow.document.head.appendChild(script);
       } catch (e) {
-        console.warn('Could not inject anti-adblock script:', e);
+        console.warn('Could not inject security bypass script:', e);
       }
     }
   }, []);

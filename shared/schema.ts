@@ -19,6 +19,17 @@ export const media = pgTable("media", {
   lastUpdated: timestamp("last_updated").defaultNow()
 });
 
+// Watchlist table
+export const watchlist = pgTable("watchlist", {
+  id: serial("id").primaryKey(),
+  mediaId: integer("media_id").notNull(),
+  addedAt: timestamp("added_at").defaultNow(),
+  watched: boolean("watched").default(false),
+  watchedAt: timestamp("watched_at"),
+  rating: integer("rating"), // User rating 1-10
+  lastWatched: timestamp("last_watched"), // For tracking watch history
+});
+
 export const insertMediaSchema = createInsertSchema(media).pick({
   tmdbId: true,
   type: true,
@@ -33,5 +44,13 @@ export const insertMediaSchema = createInsertSchema(media).pick({
   trailerKey: true
 });
 
+export const insertWatchlistSchema = createInsertSchema(watchlist).pick({
+  mediaId: true,
+  watched: true,
+  rating: true,
+});
+
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
 export type Media = typeof media.$inferSelect;
+export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
+export type Watchlist = typeof watchlist.$inferSelect;
