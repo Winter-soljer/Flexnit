@@ -66,6 +66,7 @@ export default function Detail() {
           media={media} 
           season={selectedSeason}
           episode={selectedEpisode}
+          onBack={() => setIsPlaying(false)}
         />
       </div>
     );
