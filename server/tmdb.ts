@@ -75,3 +75,26 @@ export async function getGenres(mediaType: 'movie' | 'tv') {
   const { data } = await tmdb.get(`/genre/${mediaType}/list`);
   return data.genres;
 }
+
+export async function getSimilar(mediaType: 'movie' | 'tv', id: number) {
+  const { data } = await tmdb.get(`/${mediaType}/${id}/similar`);
+  return data.results;
+}
+
+export async function getTVSeasons(id: number) {
+  const { data } = await tmdb.get(`/tv/${id}`);
+  return data.seasons.map((season: any) => ({
+    season_number: season.season_number,
+    name: season.name,
+    episodes: season.episodes || []
+  }));
+}
+
+export async function getByGenre(mediaType: 'movie' | 'tv', genreId: number) {
+  const { data } = await tmdb.get(`/discover/${mediaType}`, {
+    params: {
+      with_genres: genreId
+    }
+  });
+  return data.results;
+}
