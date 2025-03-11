@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import MediaCard from "@/components/MediaCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Media } from "@shared/schema";
 
 export default function Search() {
   const [location] = useLocation();
@@ -13,7 +14,7 @@ export default function Search() {
     setQuery(searchParams.get("q") || "");
   }, [location]);
 
-  const { data: results, isLoading } = useQuery({
+  const { data: results, isLoading } = useQuery<Media[]>({
     queryKey: ["/api/search", query],
     enabled: !!query,
   });
@@ -28,11 +29,15 @@ export default function Search() {
         Search Results for "{query}"
       </h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {results?.map((media) => (
-          <MediaCard key={media.id} media={media} />
-        ))}
-      </div>
+      {!results?.length ? (
+        <p>No results found</p>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {results.map((media) => (
+            <MediaCard key={media.id} media={media} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
