@@ -11,10 +11,9 @@ interface VideoPlayerProps {
 const antiAdblockScript = `
   // Override common ad detection methods
   window.google_ad_status = 1;
-  window.google_ad_slot = true;
   window.google_ad_client = true;
   window.google_ad_type = true;
-  
+
   // Block common ad detection scripts
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
@@ -40,9 +39,11 @@ export default function VideoPlayer({ media, season, episode }: VideoPlayerProps
   useEffect(() => {
     // Inject anti-adblock script into iframe
     const iframe = iframeRef.current;
-    if (iframe && iframe.contentWindow) {
+    if (iframe?.contentWindow) {
       try {
-        iframe.contentWindow.eval(antiAdblockScript);
+        const script = document.createElement('script');
+        script.textContent = antiAdblockScript;
+        iframe.contentWindow.document.head.appendChild(script);
       } catch (e) {
         console.warn('Could not inject anti-adblock script:', e);
       }
@@ -50,7 +51,7 @@ export default function VideoPlayer({ media, season, episode }: VideoPlayerProps
   }, []);
 
   const getPlayerUrl = () => {
-    const baseUrl = 'https://flexnitplayer.ct.ws/flexnit_player.php';
+    const baseUrl = 'https://flexnitplayer.ct.ws/flexnit_player.php?';
     const params = new URLSearchParams();
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');
@@ -60,7 +61,7 @@ export default function VideoPlayer({ media, season, episode }: VideoPlayerProps
       params.append('e', episode.toString());
     }
 
-    return `${baseUrl}?${params.toString()}`;
+    return `${baseUrl}${params.toString()}`;
   };
 
   return (

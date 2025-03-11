@@ -2,19 +2,43 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Heart, Play, Star } from "lucide-react";
+import { Heart, Play, Star, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Media } from "@shared/schema";
 import { format } from "date-fns";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import MediaRow from "@/components/MediaRow";
+
+interface Season {
+  season_number: number;
+  name: string;
+  episodes: Array<{
+    episode_number: number;
+    name: string;
+  }>;
+}
+
+interface DetailedMedia extends Media {
+  seasons?: Season[];
+  similar?: Media[];
+}
 
 export default function Detail() {
   const [match, params] = useRoute("/detail/:id");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [selectedSeason, setSelectedSeason] = useState<number>();
+  const [selectedEpisode, setSelectedEpisode] = useState<number>();
   const id = params?.id;
 
-  const { data: media, isLoading } = useQuery<Media>({
+  const { data: media, isLoading } = useQuery<DetailedMedia>({
     queryKey: [`/api/media/${id}`],
     enabled: !!id,
   });
@@ -38,7 +62,11 @@ export default function Detail() {
   if (isPlaying) {
     return (
       <div className="container pt-8">
-        <VideoPlayer media={media} />
+        <VideoPlayer 
+          media={media} 
+          season={selectedSeason}
+          episode={selectedEpisode}
+        />
       </div>
     );
   }
@@ -56,11 +84,44 @@ export default function Detail() {
 
       <div className="container -mt-32 relative">
         <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
-          <img
-            src={`https://image.tmdb.org/t/p/w500${media.posterPath}`}
-            alt={media.title}
-            className="rounded-lg shadow-xl"
-          />
+          <div className="space-y-6">
+            <img
+              src={`https://image.tmdb.org/t/p/w500${media.posterPath}`}
+              alt={media.title}
+              className="rounded-lg shadow-xl"
+            />
+
+            {media.type === 'tv' && media.seasons && (
+              <ScrollArea className="h-[400px] rounded-md border p-4">
+                <h3 className="text-lg font-semibold mb-4">Seasons</h3>
+                <Accordion type="single" collapsible>
+                  {media.seasons.map((season) => (
+                    <AccordionItem key={season.season_number} value={`season-${season.season_number}`}>
+                      <AccordionTrigger>{season.name}</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2">
+                          {season.episodes.map((episode) => (
+                            <Button
+                              key={episode.episode_number}
+                              variant="ghost"
+                              className="w-full justify-start"
+                              onClick={() => {
+                                setSelectedSeason(season.season_number);
+                                setSelectedEpisode(episode.episode_number);
+                                setIsPlaying(true);
+                              }}
+                            >
+                              {episode.episode_number}. {episode.name}
+                            </Button>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </ScrollArea>
+            )}
+          </div>
 
           <div>
             <div className="flex items-center gap-4 mb-4">
@@ -91,7 +152,7 @@ export default function Detail() {
             </Button>
 
             {media.trailerKey && (
-              <div className="aspect-video mt-8">
+              <div className="aspect-video mt-8 w-2/3">
                 <iframe
                   className="w-full h-full"
                   src={`https://www.youtube.com/embed/${media.trailerKey}`}
@@ -102,6 +163,12 @@ export default function Detail() {
             )}
           </div>
         </div>
+
+        {media.similar && media.similar.length > 0 && (
+          <div className="mt-12">
+            <MediaRow title="Similar Titles" media={media.similar} />
+          </div>
+        )}
       </div>
     </div>
   );
