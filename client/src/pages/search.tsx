@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import MediaCard from "@/components/MediaCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Media } from "@shared/schema";
-import { search } from "@/lib/tmdb";
+import { search } from "@/lib/api";
 export default function Search() {
   const [location] = useLocation();
   const [query, setQuery] = useState("");
