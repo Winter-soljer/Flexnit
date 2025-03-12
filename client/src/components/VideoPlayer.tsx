@@ -54,8 +54,14 @@ export default function VideoPlayer({ media, season, episode, onBack }: VideoPla
   };
 
   const handleIframeLoad = () => {
-    if (iframeRef.current) {
-      iframeRef.current.contentWindow?.eval(injectAdBlockScript());
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        const script = document.createElement('script');
+        script.textContent = injectAdBlockScript();
+        iframeRef.current.contentDocument?.body.appendChild(script);
+      } catch (error) {
+        console.error('Failed to inject ad block script:', error);
+      }
     }
   };
 
