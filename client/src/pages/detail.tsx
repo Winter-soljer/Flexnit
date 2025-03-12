@@ -67,6 +67,8 @@ export default function Detail() {
           season={selectedSeason}
           episode={selectedEpisode}
           onBack={() => setIsPlaying(false)}
+          setSelectedSeason={setSelectedSeason}
+          setSelectedEpisode={setSelectedEpisode}
         />
       </div>
     );
