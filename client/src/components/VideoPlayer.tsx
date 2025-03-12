@@ -14,7 +14,7 @@ export default function VideoPlayer({ media, season, episode, onBack }: VideoPla
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const getPlayerUrl = () => {
-    const baseUrl = 'https://flexnitplayer.ct.ws/flexnit_player.php?';
+    const baseUrl = 'https://multiembed.mov/?';
     const params = new URLSearchParams();
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');

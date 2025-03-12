@@ -15,7 +15,7 @@ export default function MediaCard({ media }: MediaCardProps) {
 
   const handleMouseEnter = () => {
     timeoutRef.current = window.setTimeout(() => {
-      setIsHovered(true);
+      setIsHovered(false);
     }, 500);
   };
 

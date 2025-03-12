@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import MediaCard from "@/components/MediaCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Media } from "@shared/schema";
-import { search } from "@/lib/api";
+
 export default function Search() {
   const [location] = useLocation();
   const [query, setQuery] = useState("");
@@ -15,18 +15,30 @@ export default function Search() {
   }, [location]);
 
   const fetchSearchResults = async () => {
-    if (!query) return []; // ✅ Prevents API call if query is empty
+    if (!query) return []; // Prevent API call if query is empty
 
-    console.log("Searching for:", query); // ✅ Debugging log
-    const results = await search(query); // ✅ Corrected function call
-    console.log("Search results:", results);
-    return results;
+    const url = `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(
+      query
+    )}&page=1&api_key=dade4c57dbabc51b2888699212978cac`;
+
+    console.log("Fetching:", url); // Debugging log
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error("API Error:", response.status);
+      throw new Error("Failed to fetch search results");
+    }
+
+    const data = await response.json();
+    console.log("Search results:", data.results); // Debugging log
+
+    return data.results || []; // Ensure it always returns an array
   };
 
   const { data: results, isLoading, isError } = useQuery<Media[]>({
     queryKey: ["/api/search", query],
     queryFn: fetchSearchResults,
-    enabled: !!query, // ✅ Ensures query is not empty before fetching
+    enabled: !!query, // Only fetch if query is not empty
   });
 
   if (isLoading) {
@@ -51,9 +63,21 @@ export default function Search() {
         <p className="text-center text-gray-500">No results found</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {results.map((media) => (
-          <MediaCard key={media.id} media={media} type={media.media_type} />
-          ))}
+          {results.map((media) => {
+            // Determine the appropriate image URL based on the media type
+            const posterPath = media.poster_path
+              ? `https://image.tmdb.org/t/p/w500${media.poster_path}`
+              : "https://via.placeholder.com/500x750?text=No+Image"; // Placeholder image for missing posters
+
+            return (
+              <MediaCard
+                key={media.id}
+                media={media}
+              
+                posterPath={posterPath} // Pass the poster path to the MediaCard
+              />
+            );
+          })}
         </div>
       )}
     </div>
