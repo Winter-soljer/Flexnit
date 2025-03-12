@@ -80,11 +80,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/genres/:type', async (req, res) => {
     try {
-      const type = req.params.type as 'movie' | 'tv';
-      const genres = await getGenres(type);
-      res.json(genres);
+      const data = await getGenres(req.params.type as any);
+      res.json(data);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch genres' });
+      res.status(500).send({ message: "Failed to fetch genres" });
+    }
+  });
+
+  app.get("/api/tv/:id/seasons", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).send({ message: "Invalid TV show ID" });
+      }
+      const seasons = await getTVSeasons(id);
+      res.json(seasons);
+    } catch (error) {
+      res.status(500).send({ message: "Failed to fetch seasons" });
     }
   });
 
@@ -110,22 +122,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const type = req.params.type as 'movie' | 'tv';
       const tmdbId = parseInt(req.params.tmdbId);
-      
+
       if (isNaN(tmdbId)) {
         return res.status(400).json({ message: 'Invalid TMDB ID' });
       }
-      
+
       // First check if we already have this media in our database
       const existingMedia = await storage.getMediaByTmdbId(tmdbId, type);
-      
+
       if (existingMedia) {
         return res.json(existingMedia);
       }
-      
+
       // If not, fetch details from TMDB and cache it
       const details = await getDetails(type, tmdbId);
       const media = await storage.processAndCacheMedia(details, type);
-      
+
       res.json(media);
     } catch (error) {
       console.error('Error getting or creating media:', error);

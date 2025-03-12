@@ -109,12 +109,10 @@ export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
         <iframe
           ref={iframeRef}
           src={getPlayerUrl()}
-          className="absolute inset-0 w-[calc(100%-310px)] h-[100%] ml-[310px] max-w-full max-h-full"
+          className="absolute inset-0 w-[100%] h-[100%] max-w-full max-h-full"
+          style={{marginLeft: media.type === 'tv' ? '310px' : '0'}}
           allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-mixed-content allow-presentation"
-          referrerPolicy="no-referrer"
-          onLoad={handleIframeLoad} // Ensure the ad-block script is injected after load
+          onLoad={handleIframeLoad}
         />
       </div>
 
