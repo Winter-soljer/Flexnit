@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import MediaCard from "@/components/MediaCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Media } from "@shared/schema";
-import { search } from "@/server/tmdb"; // ✅ Import TMDB search function
-
+import { search } from "@/lib/tmdb";
 export default function Search() {
   const [location] = useLocation();
   const [query, setQuery] = useState("");
@@ -16,10 +15,10 @@ export default function Search() {
   }, [location]);
 
   const fetchSearchResults = async () => {
-    if (!query) return []; // Prevent API call if query is empty
+    if (!query) return []; // ✅ Prevents API call if query is empty
 
     console.log("Searching for:", query); // ✅ Debugging log
-    const results = await search(query); // ✅ Use TMDB's search function
+    const results = await search(query); // ✅ Corrected function call
     console.log("Search results:", results);
     return results;
   };
@@ -27,7 +26,7 @@ export default function Search() {
   const { data: results, isLoading, isError } = useQuery<Media[]>({
     queryKey: ["/api/search", query],
     queryFn: fetchSearchResults,
-    enabled: !!query, // ✅ Only fetch if query is not empty
+    enabled: !!query, // ✅ Ensures query is not empty before fetching
   });
 
   if (isLoading) {
