@@ -6,9 +6,10 @@ import VideoPreview from "./VideoPreview";
 
 interface MediaCardProps {
   media: Media;
+  posterPath?: string;
 }
 
-export default function MediaCard({ media }: MediaCardProps) {
+export default function MediaCard({ media, posterPath }: MediaCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [, setLocation] = useLocation();
   const timeoutRef = useRef<number>();
@@ -38,7 +39,7 @@ export default function MediaCard({ media }: MediaCardProps) {
           <VideoPreview media={media} />
         ) : (
           <img
-            src={`https://image.tmdb.org/t/p/w500${media.posterPath}`}
+            src={posterPath || `https://image.tmdb.org/t/p/w500${media.posterPath}`}
             alt={media.title}
             className="w-full aspect-[2/3] object-cover"
           />
