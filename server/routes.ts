@@ -96,7 +96,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const seasons = await getTVSeasons(id);
       res.json(seasons);
     } catch (error) {
-      res.status(500).send({ message: "Failed to fetch seasons" });
+      console.error('Error fetching TV seasons:', error);
+      res.status(500).json({ message: "Failed to fetch seasons" });
     }
   });
 
