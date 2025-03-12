@@ -81,40 +81,55 @@ export default function VideoPlayer({
         <div className="absolute left-0 top-0 w-[300px] h-full bg-background overflow-auto">
           <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Seasons</h2>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {seasons.map((season) => (
-                <div
-                  key={season.season_number}
-                  className="cursor-pointer py-2 px-4 hover:bg-background/30 flex items-center justify-between"
-                  onClick={() => setSelectedSeason(season.season_number)}
-                >
-                  <span>{season.name}</span>
-                  {selectedSeason === season.season_number ? (
-                    <ChevronDown className="h-5 w-5" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5" />
+                <div key={season.season_number} className="border-b border-border last:border-0">
+                  <div
+                    className="cursor-pointer py-3 px-4 hover:bg-background/30 flex items-center justify-between"
+                    onClick={() => {
+                      if (selectedSeason === season.season_number) {
+                        setSelectedSeason(null); // Toggle off if already selected
+                      } else {
+                        setSelectedSeason(season.season_number);
+                      }
+                    }}
+                  >
+                    <span className="font-medium">{season.name}</span>
+                    {selectedSeason === season.season_number ? (
+                      <ChevronDown className="h-5 w-5" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5" />
+                    )}
+                  </div>
+                  
+                  {/* Episodes dropdown */}
+                  {selectedSeason === season.season_number && (
+                    <div className="pl-6 pr-4 pb-2">
+                      <ul className="space-y-1">
+                        {season.episodes.map((episode) => (
+                          <li 
+                            key={episode.episode_number} 
+                            className={`cursor-pointer rounded-md hover:bg-primary/10 p-2 transition-colors ${
+                              selectedEpisode === episode.episode_number ? 'bg-primary/20 text-primary-foreground' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedEpisode(episode.episode_number);
+                              // Force player refresh when changing episodes
+                              const iframe = iframeRef.current;
+                              if (iframe) {
+                                iframe.src = getPlayerUrl();
+                              }
+                            }}
+                          >
+                            <span className="font-medium">{episode.episode_number}.</span> {episode.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               ))}
             </div>
-            {selectedSeason && (
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Episodes</h3>
-                <ul>
-                  {seasons.find(s => s.season_number === selectedSeason)?.episodes.map((episode) => (
-                    <li 
-                      key={episode.episode_number} 
-                      className={`cursor-pointer hover:bg-background/30 p-2 ${
-                        selectedEpisode === episode.episode_number ? 'bg-primary/20' : ''
-                      }`}
-                      onClick={() => setSelectedEpisode(episode.episode_number)}
-                    >
-                      {episode.episode_number}. {episode.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       )}
