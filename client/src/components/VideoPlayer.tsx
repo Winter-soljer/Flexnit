@@ -42,16 +42,16 @@ export default function VideoPlayer({
 
   useEffect(() => {
     // Update local state when props change
-    if (season) setSelectedSeason(season);
-    if (episode) setSelectedEpisode(episode);
+    if (season !== undefined) setSelectedSeason(season);
+    if (episode !== undefined) setSelectedEpisode(episode);
   }, [season, episode]);
 
   // Update parent state when local state changes
   useEffect(() => {
-    if (setParentSelectedSeason && selectedSeason) {
+    if (setParentSelectedSeason && selectedSeason !== null) {
       setParentSelectedSeason(selectedSeason);
     }
-    if (setParentSelectedEpisode && selectedEpisode) {
+    if (setParentSelectedEpisode && selectedEpisode !== null) {
       setParentSelectedEpisode(selectedEpisode);
     }
   }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
@@ -62,11 +62,18 @@ export default function VideoPlayer({
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');
 
-    if (media.type === 'tv' && selectedSeason && selectedEpisode) {
+    if (media.type === 'tv' && selectedSeason !== null && selectedEpisode !== null) {
       params.append('s', selectedSeason.toString());
       params.append('e', selectedEpisode.toString());
     }
 
+    console.log("Player URL params:", {
+      media_id: media.tmdbId,
+      type: media.type,
+      season: selectedSeason,
+      episode: selectedEpisode
+    });
+    
     return `${baseUrl}${params.toString()}`;
   };
 
@@ -114,11 +121,16 @@ export default function VideoPlayer({
                             }`}
                             onClick={() => {
                               setSelectedEpisode(episode.episode_number);
+                              
                               // Force player refresh when changing episodes
-                              const iframe = iframeRef.current;
-                              if (iframe) {
-                                iframe.src = getPlayerUrl();
-                              }
+                              setTimeout(() => {
+                                const iframe = iframeRef.current;
+                                if (iframe) {
+                                  const newUrl = getPlayerUrl();
+                                  console.log("Updating iframe URL to:", newUrl);
+                                  iframe.src = newUrl;
+                                }
+                              }, 50);
                             }}
                           >
                             <span className="font-medium">{episode.episode_number}.</span> {episode.name}
