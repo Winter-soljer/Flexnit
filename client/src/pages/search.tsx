@@ -69,11 +69,33 @@ export default function Search() {
               ? `https://image.tmdb.org/t/p/w500${media.poster_path}`
               : "https://via.placeholder.com/500x750?text=No+Image"; // Placeholder image for missing posters
 
+            // First, let's fetch the media from the database to get the correct ID
+            // We'll create a proper Media object that maps TMDB API fields to our schema
+            // but we'll use a client-side temporary ID approach for search results
+            // When the user clicks, we'll search by tmdbId instead
+            const tmdbId = media.id;
+            const mediaItem: Media = {
+              // Use a temporary negative ID for client-side purposes
+              // This ensures it won't conflict with real IDs from the database
+              id: -tmdbId, // Using negative numbers to distinguish from real IDs
+              tmdbId: tmdbId,
+              type: media.media_type || 'movie',
+              title: media.title || media.name || '',
+              overview: media.overview || '',
+              posterPath: media.poster_path,
+              backdropPath: media.backdrop_path,
+              releaseDate: media.release_date || media.first_air_date,
+              voteAverage: media.vote_average,
+              popularity: media.popularity,
+              genres: media.genre_ids?.map(String) || [],
+              trailerKey: null,
+              lastUpdated: null
+            };
+
             return (
               <MediaCard
-                key={media.id}
-                media={media}
-              
+                key={mediaItem.id}
+                media={mediaItem}
                 posterPath={posterPath} // Pass the poster path to the MediaCard
               />
             );

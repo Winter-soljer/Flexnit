@@ -3,6 +3,7 @@ import { getTrending, getPopular, getDetails, getTrailer, type TMDBMovie, type T
 
 export interface IStorage {
   getMediaById(id: number): Promise<Media | undefined>;
+  getMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<Media | undefined>;
   getTrendingMedia(type: 'movie' | 'tv'): Promise<Media[]>;
   getPopularMedia(type: 'movie' | 'tv'): Promise<Media[]>;
   searchMedia(query: string): Promise<Media[]>;
@@ -21,6 +22,16 @@ export class MemStorage implements IStorage {
 
   async getMediaById(id: number): Promise<Media | undefined> {
     return this.media.get(id);
+  }
+
+  async getMediaByTmdbId(tmdbId: number, type: 'movie' | 'tv'): Promise<Media | undefined> {
+    // Find the first media entry that matches both tmdbId and type
+    for (const media of this.media.values()) {
+      if (media.tmdbId === tmdbId && media.type === type) {
+        return media;
+      }
+    }
+    return undefined;
   }
 
   async getTrendingMedia(type: 'movie' | 'tv'): Promise<Media[]> {

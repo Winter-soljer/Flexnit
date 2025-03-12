@@ -105,6 +105,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint to get or create media by TMDB ID
+  app.get('/api/search/get-or-create/:type/:tmdbId', async (req, res) => {
+    try {
+      const type = req.params.type as 'movie' | 'tv';
+      const tmdbId = parseInt(req.params.tmdbId);
+      
+      if (isNaN(tmdbId)) {
+        return res.status(400).json({ message: 'Invalid TMDB ID' });
+      }
+      
+      // First check if we already have this media in our database
+      const existingMedia = await storage.getMediaByTmdbId(tmdbId, type);
+      
+      if (existingMedia) {
+        return res.json(existingMedia);
+      }
+      
+      // If not, fetch details from TMDB and cache it
+      const details = await getDetails(type, tmdbId);
+      const media = await storage.processAndCacheMedia(details, type);
+      
+      res.json(media);
+    } catch (error) {
+      console.error('Error getting or creating media:', error);
+      res.status(500).json({ message: 'Failed to get or create media' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
