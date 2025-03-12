@@ -14,6 +14,27 @@ export default function MediaCard({ media, posterPath }: MediaCardProps) {
   const [, setLocation] = useLocation();
   const timeoutRef = useRef<number>();
 
+  const handleClick = () => {
+    // If this is a search result (negative ID), fetch by TMDB ID
+    if (media.id < 0) {
+      // We need to fetch this media by TMDB ID
+      // Call our API endpoint to process and cache this TMDB media
+      fetch(`/api/search/get-or-create/${media.type}/${media.tmdbId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.id) {
+            setLocation(`/detail/${data.id}`);
+          }
+        })
+        .catch(error => {
+          console.error("Error fetching media details:", error);
+        });
+    } else {
+      // Normal media from our database
+      setLocation(`/detail/${media.id}`);
+    }
+  };
+
   const handleMouseEnter = () => {
     timeoutRef.current = window.setTimeout(() => {
       setIsHovered(false);
@@ -32,7 +53,7 @@ export default function MediaCard({ media, posterPath }: MediaCardProps) {
       className="relative group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => setLocation(`/detail/${media.id}`)}
+      onClick={handleClick}
     >
       <Card className="overflow-hidden cursor-pointer transition-transform duration-200 group-hover:scale-110 group-hover:z-10">
         {isHovered && media.trailerKey ? (
