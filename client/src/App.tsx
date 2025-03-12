@@ -16,8 +16,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/movies" component={Movies} />
       <Route path="/tv-shows" component={TVShows} />
-      <Route path="/detail/:id" component={Detail} />
       <Route path="/search" component={Search} />
+      <Route path="/detail/:id" component={Detail} />
       <Route component={NotFound} />
     </Switch>
   );

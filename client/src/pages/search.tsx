@@ -4,37 +4,56 @@ import { useEffect, useState } from "react";
 import MediaCard from "@/components/MediaCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Media } from "@shared/schema";
+import { search } from "@/server/tmdb"; // ✅ Import TMDB search function
 
 export default function Search() {
   const [location] = useLocation();
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.split("?")[1]);
-    setQuery(searchParams.get("q") || "");
+    const searchParams = new URLSearchParams(window.location.search);
+    setQuery(searchParams.get("q")?.trim() || "");
   }, [location]);
 
-  const { data: results, isLoading } = useQuery<Media[]>({
+  const fetchSearchResults = async () => {
+    if (!query) return []; // Prevent API call if query is empty
+
+    console.log("Searching for:", query); // ✅ Debugging log
+    const results = await search(query); // ✅ Use TMDB's search function
+    console.log("Search results:", results);
+    return results;
+  };
+
+  const { data: results, isLoading, isError } = useQuery<Media[]>({
     queryKey: ["/api/search", query],
-    enabled: !!query,
+    queryFn: fetchSearchResults,
+    enabled: !!query, // ✅ Only fetch if query is not empty
   });
 
   if (isLoading) {
-    return <Skeleton className="w-full h-screen" />;
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-8">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="w-full h-48" />
+        ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <p className="text-red-500 text-center mt-8">Failed to load search results.</p>;
   }
 
   return (
     <div className="container pt-8">
-      <h1 className="text-4xl font-bold mb-8">
-        Search Results for "{query}"
-      </h1>
+      <h1 className="text-4xl font-bold mb-8">Search Results for "{query}"</h1>
 
       {!results?.length ? (
-        <p>No results found</p>
+        <p className="text-center text-gray-500">No results found</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {results.map((media) => (
-            <MediaCard key={media.id} media={media} />
+            <MediaCard key={media.id} media={media} type={media.media_type} />
           ))}
         </div>
       )}
