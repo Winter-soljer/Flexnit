@@ -104,13 +104,14 @@ export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
         <ArrowLeft className="h-6 w-6" />
       </Button>
 
-      {/* Iframe Container */}
       <div className="relative w-full h-full">
         <iframe
           ref={iframeRef}
           src={getPlayerUrl()}
-          className="absolute inset-0 w-[100%] h-[100%] max-w-full max-h-full"
-          style={{marginLeft: media.type === 'tv' ? '310px' : '0'}}
+          className="absolute inset-0 w-[80%] h-[100%] max-w-full max-h-full"
+          style={{
+  marginLeft: media.type === 'movie' ? '175px' : media.type === 'tv' ? '310px' : '0',
+}}
           allowFullScreen
           onLoad={handleIframeLoad}
         />
