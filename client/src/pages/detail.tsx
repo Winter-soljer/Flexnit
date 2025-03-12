@@ -61,16 +61,14 @@ export default function Detail() {
 
   if (isPlaying) {
     return (
-      <div className="container pt-8">
-        <VideoPlayer 
-          media={media} 
-          season={selectedSeason}
-          episode={selectedEpisode}
-          onBack={() => setIsPlaying(false)}
-          setSelectedSeason={setSelectedSeason}
-          setSelectedEpisode={setSelectedEpisode}
-        />
-      </div>
+      <VideoPlayer 
+        media={media} 
+        season={selectedSeason}
+        episode={selectedEpisode}
+        onBack={() => setIsPlaying(false)}
+        setSelectedSeason={setSelectedSeason}
+        setSelectedEpisode={setSelectedEpisode}
+      />
     );
   }
 

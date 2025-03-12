@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Media } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 interface Season {
   season_number: number;
@@ -14,41 +15,46 @@ interface Season {
 
 interface VideoPlayerProps {
   media: Media;
+  season?: number;
+  episode?: number;
   onBack: () => void;
+  setSelectedSeason?: (season: number) => void;
+  setSelectedEpisode?: (episode: number) => void;
 }
 
-export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
+export default function VideoPlayer({ 
+  media, 
+  onBack, 
+  season,
+  episode,
+  setSelectedSeason: setParentSelectedSeason,
+  setSelectedEpisode: setParentSelectedEpisode
+}: VideoPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [selectedSeason, setSelectedSeason] = useState<number | null>(null);
-  const [selectedEpisode, setSelectedEpisode] = useState<number | null>(null);
-  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [selectedSeason, setSelectedSeason] = useState<number | null>(season || null);
+  const [selectedEpisode, setSelectedEpisode] = useState<number | null>(episode || null);
 
+  // Fetch seasons from API
+  const { data: seasons = [] } = useQuery<Season[]>({
+    queryKey: [`/api/tv/${media.tmdbId}/seasons`],
+    enabled: media.type === 'tv',
+  });
 
-  // Ad-blocking JavaScript code
-  const injectAdBlockScript = () => {
-    const script = `
-      javascript:(function() {
-        var observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            mutation.addedNodes.forEach(function(node) {
-              if (node.nodeType === 1) {
-                var adClasses = ['popup-ad', 'overlay-ad', 'ad-banner', 'ad-block', 'ad-container', 'adsbox', 'modal-backdrop', 'ad_overlay'];
-                for (var i = 0; i < adClasses.length; i++) {
-                  if (node.classList.contains(adClasses[i])) {
-                    node.remove();
-                    console.log('Ad removed: ' + adClasses[i]);
-                  }
-                }
-              }
-            });
-          });
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-        console.log('AdBlock script injected');
-      })();
-    `;
-    return script;
-  };
+  useEffect(() => {
+    // Update local state when props change
+    if (season) setSelectedSeason(season);
+    if (episode) setSelectedEpisode(episode);
+  }, [season, episode]);
+
+  // Update parent state when local state changes
+  useEffect(() => {
+    if (setParentSelectedSeason && selectedSeason) {
+      setParentSelectedSeason(selectedSeason);
+    }
+    if (setParentSelectedEpisode && selectedEpisode) {
+      setParentSelectedEpisode(selectedEpisode);
+    }
+  }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
 
   const getPlayerUrl = () => {
     const baseUrl = 'https://multiembed.mov/?';
@@ -56,7 +62,7 @@ export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');
 
-    if (selectedSeason && selectedEpisode) {
+    if (media.type === 'tv' && selectedSeason && selectedEpisode) {
       params.append('s', selectedSeason.toString());
       params.append('e', selectedEpisode.toString());
     }
@@ -64,58 +70,11 @@ export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
     return `${baseUrl}${params.toString()}`;
   };
 
-  const handleIframeLoad = () => {
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        const script = document.createElement('script');
-        script.textContent = injectAdBlockScript();
-        iframeRef.current.contentDocument?.body.appendChild(script);
-      } catch (error) {
-        console.error('Failed to inject ad block script:', error);
-      }
-    }
-  };
-
-  //Fetch seasons and episodes (replace with your actual API call)
-  useEffect(() => {
-    const fetchSeasons = async () => {
-      // Replace with your actual API call to fetch seasons and episodes
-      const seasonsData = await Promise.resolve([
-        { season_number: 1, name: "Season 1", episodes: [{ episode_number: 1, name: "Episode 1" }, { episode_number: 2, name: "Episode 2" }] },
-        { season_number: 2, name: "Season 2", episodes: [{ episode_number: 1, name: "Episode 3" }, { episode_number: 2, name: "Episode 4" }] },
-      ]);
-        setSeasons(seasonsData);
-      };
-      if (media.type === 'tv') {
-        fetchSeasons();
-      }
-  }, [media]);
-
-
   return (
-    <div className="relative w-full h-screen">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-4 left-4 z-10 bg-background/20 backdrop-blur-sm hover:bg-background/40"
-        onClick={onBack}
-      >
-        <ArrowLeft className="h-6 w-6" />
+    <div className="relative w-full h-[calc(100vh-140px)]">
+      <Button variant="outline" className="absolute left-4 top-4 z-10" onClick={onBack}>
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
-
-      <div className="relative w-full h-full">
-        <iframe
-          ref={iframeRef}
-          src={getPlayerUrl()}
-          className="absolute inset-0 w-[80%] h-[100%] max-w-full max-h-full"
-          style={{
-  marginLeft: media.type === 'movie' ? '175px' : media.type === 'tv' ? '310px' : '0',
-}}
-          allowFullScreen
-          onLoad={handleIframeLoad}
-        />
-      </div>
 
       {/* Season Sidebar (for TV shows) */}
       {media.type === 'tv' && (
@@ -143,8 +102,14 @@ export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
                 <h3 className="text-lg font-semibold">Episodes</h3>
                 <ul>
                   {seasons.find(s => s.season_number === selectedSeason)?.episodes.map((episode) => (
-                    <li key={episode.episode_number} className="cursor-pointer hover:bg-background/30 p-2" onClick={() => setSelectedEpisode(episode.episode_number)}>
-                      {episode.name}
+                    <li 
+                      key={episode.episode_number} 
+                      className={`cursor-pointer hover:bg-background/30 p-2 ${
+                        selectedEpisode === episode.episode_number ? 'bg-primary/20' : ''
+                      }`}
+                      onClick={() => setSelectedEpisode(episode.episode_number)}
+                    >
+                      {episode.episode_number}. {episode.name}
                     </li>
                   ))}
                 </ul>
@@ -153,6 +118,23 @@ export default function VideoPlayer({ media, onBack }: VideoPlayerProps) {
           </div>
         </div>
       )}
+
+      {/* Video iframe */}
+      <div className="relative w-full h-full">
+        <iframe
+          ref={iframeRef}
+          src={getPlayerUrl()}
+          className="absolute inset-0 w-full h-full max-w-full max-h-full"
+          style={{
+            marginLeft: media.type === 'tv' ? '300px' : '0',
+            width: media.type === 'tv' ? 'calc(100% - 300px)' : '100%'
+          }}
+          allowFullScreen
+          allow="autoplay; encrypted-media; picture-in-picture"
+          
+          referrerPolicy="no-referrer"
+        />
+      </div>
     </div>
   );
 }
