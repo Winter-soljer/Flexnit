@@ -17,15 +17,7 @@ export const media = pgTable("media", {
   genres: jsonb("genres").notNull().$type<string[]>(),
   trailerKey: text("trailer_key"), // YouTube video key
   lastUpdated: timestamp("last_updated").defaultNow()
-
 });
-
-// @shared/schema.ts
-export interface Media {
-  // ... existing properties ...
-  media_type: 'movie' | 'tv' ;
-  id:''// Add this property
-}
 
 // Watchlist table
 export const watchlist = pgTable("watchlist", {
@@ -59,5 +51,6 @@ export const insertWatchlistSchema = createInsertSchema(watchlist).pick({
 });
 
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
+export type Media = typeof media.$inferSelect;
 export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
 export type Watchlist = typeof watchlist.$inferSelect;
