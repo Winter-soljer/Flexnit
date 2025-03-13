@@ -42,14 +42,25 @@ export default function Home() {
   });
 
   // Fetch recommendations based on user's preferences if they have favorites
-  const { data: recommendations, isLoading: isLoadingRecommendations } = useQuery<Media[]>({
-    queryKey: ["/api/genre/movie/" + (recommendationGenres[0] || "28")],
-    enabled: recommendationGenres.length > 0
+  const genreQueries = useQueries({
+    queries: recommendationGenres.slice(0, 3).map((genre) => ({
+      queryKey: [`/api/genre/movie/${genre}`],
+      queryFn: async () => {
+        const res = await fetch(`/api/genre/movie/${genre}`);
+        if (!res.ok) throw new Error("Failed to fetch recommendations");
+        return res.json();
+      },
+      enabled: !!genre && hasFavorites,
+    })),
   });
 
+  const recommendationsData = genreQueries
+    .filter(query => query.data)
+    .flatMap(query => query.data || [])
+    .slice(0, 10);
 
-  if (isLoadingMovies || isLoadingTVShows || genreQueries.some(q => q.isLoading) || 
-      (hasFavorites && isLoadingRecommendations)) {
+  if (isLoadingMovies || isLoadingTVShows || 
+      (hasFavorites && genreQueries.some(q => q.isLoading))) {
     return <Skeleton className="w-full h-screen" />;
   }
 
@@ -62,8 +73,8 @@ export default function Home() {
       <Hero media={trendingMovies[0]} />
 
       <div className="container space-y-8 pt-8">
-        {hasFavorites && recommendations?.length > 0 && (
-          <MediaRow title="Recommended For You" media={recommendations} />
+        {hasFavorites && recommendationsData.length > 0 && (
+          <MediaRow title="Recommended For You" media={recommendationsData} />
         )}
         <MediaRow title="Trending Movies" media={trendingMovies} />
         <MediaRow title="Trending TV Shows" media={trendingTVShows} />
