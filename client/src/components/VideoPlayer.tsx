@@ -42,16 +42,16 @@ export default function VideoPlayer({
 
   useEffect(() => {
     // Update local state when props change
-    if (season) setSelectedSeason(season);
-    if (episode) setSelectedEpisode(episode);
+    if (season !== undefined) setSelectedSeason(season);
+    if (episode !== undefined) setSelectedEpisode(episode);
   }, [season, episode]);
 
   // Update parent state when local state changes
   useEffect(() => {
-    if (setParentSelectedSeason && selectedSeason) {
+    if (setParentSelectedSeason && selectedSeason !== null) {
       setParentSelectedSeason(selectedSeason);
     }
-    if (setParentSelectedEpisode && selectedEpisode) {
+    if (setParentSelectedEpisode && selectedEpisode !== null) {
       setParentSelectedEpisode(selectedEpisode);
     }
   }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
@@ -62,59 +62,87 @@ export default function VideoPlayer({
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');
 
-    if (media.type === 'tv' && selectedSeason && selectedEpisode) {
+    if (media.type === 'tv' && selectedSeason !== null && selectedEpisode !== null) {
       params.append('s', selectedSeason.toString());
       params.append('e', selectedEpisode.toString());
     }
 
+    console.log("Player URL params:", {
+      media_id: media.tmdbId,
+      type: media.type,
+      season: selectedSeason,
+      episode: selectedEpisode
+    });
+    
     return `${baseUrl}${params.toString()}`;
   };
 
   return (
     <div className="relative w-full h-[calc(100vh-140px)]">
-      <Button variant="outline" className="absolute left-4 top-4 z-10" onClick={onBack}>
+      {/* Back Button */}
+      <Button variant="outline" className="absolute left-4 top-4 z-30" onClick={onBack}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
 
       {/* Season Sidebar (for TV shows) */}
       {media.type === 'tv' && (
-        <div className="absolute left-0 top-0 w-[300px] h-full bg-background overflow-auto">
+        <div className="absolute left-0 top-0 w-[300px] h-full bg-background overflow-auto z-20">
           <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Seasons</h2>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {seasons.map((season) => (
-                <div
-                  key={season.season_number}
-                  className="cursor-pointer py-2 px-4 hover:bg-background/30 flex items-center justify-between"
-                  onClick={() => setSelectedSeason(season.season_number)}
-                >
-                  <span>{season.name}</span>
-                  {selectedSeason === season.season_number ? (
-                    <ChevronDown className="h-5 w-5" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5" />
+                <div key={season.season_number} className="border-b border-border last:border-0">
+                  <div
+                    className="cursor-pointer py-3 px-4 hover:bg-background/30 flex items-center justify-between"
+                    onClick={() => {
+                      if (selectedSeason === season.season_number) {
+                        setSelectedSeason(null); // Toggle off if already selected
+                      } else {
+                        setSelectedSeason(season.season_number);
+                      }
+                    }}
+                  >
+                    <span className="font-medium">{season.name}</span>
+                    {selectedSeason === season.season_number ? (
+                      <ChevronDown className="h-5 w-5" />
+                    ) : (
+                      <ChevronRight className="h-5 w-5" />
+                    )}
+                  </div>
+                  
+                  {/* Episodes dropdown */}
+                  {selectedSeason === season.season_number && (
+                    <div className="pl-6 pr-4 pb-2">
+                      <ul className="space-y-1">
+                        {season.episodes.map((episode) => (
+                          <li 
+                            key={episode.episode_number} 
+                            className={`cursor-pointer rounded-md hover:bg-primary/10 p-2 transition-colors ${
+                              selectedEpisode === episode.episode_number ? 'bg-primary/20 text-primary-foreground' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedEpisode(episode.episode_number);
+                              
+                              // Force player refresh when changing episodes
+                              setTimeout(() => {
+                                const iframe = iframeRef.current;
+                                if (iframe) {
+                                  const newUrl = getPlayerUrl();
+                                  console.log("Updating iframe URL to:", newUrl);
+                                  iframe.src = newUrl;
+                                }
+                              }, 50);
+                            }}
+                          >
+                            <span className="font-medium">{episode.episode_number}.</span> {episode.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               ))}
             </div>
-            {selectedSeason && (
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">Episodes</h3>
-                <ul>
-                  {seasons.find(s => s.season_number === selectedSeason)?.episodes.map((episode) => (
-                    <li 
-                      key={episode.episode_number} 
-                      className={`cursor-pointer hover:bg-background/30 p-2 ${
-                        selectedEpisode === episode.episode_number ? 'bg-primary/20' : ''
-                      }`}
-                      onClick={() => setSelectedEpisode(episode.episode_number)}
-                    >
-                      {episode.episode_number}. {episode.name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -124,14 +152,13 @@ export default function VideoPlayer({
         <iframe
           ref={iframeRef}
           src={getPlayerUrl()}
-          className="absolute inset-0 w-full h-full max-w-full max-h-full"
+          className="absolute inset-0 w-full h-full max-w-full max-h-full z-10"
           style={{
             marginLeft: media.type === 'tv' ? '300px' : '0',
             width: media.type === 'tv' ? 'calc(100% - 300px)' : '100%'
           }}
           allowFullScreen
           allow="autoplay; encrypted-media; picture-in-picture"
-          
           referrerPolicy="no-referrer"
         />
       </div>
