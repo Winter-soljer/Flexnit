@@ -38,10 +38,10 @@ export default function Detail() {
   
   // Check if the media is in favorites when it loads
   useEffect(() => {
-    if (media) {
+    if (media && media.tmdbId && media.type) {
       setIsFavorite(isInFavorites(media.tmdbId, media.type));
     }
-  }, [media?.tmdbId, media?.type]);
+  }, [media]);
   
   // Handle favorite toggling
   const toggleFavorite = () => {
