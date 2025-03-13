@@ -9,6 +9,7 @@ import TVShows from "@/pages/tv-shows";
 import Detail from "@/pages/detail";
 import Search from "@/pages/search";
 import NotFound from "@/pages/not-found";
+import Favorites from "@/pages/favorites"; // Added import for Favorites page
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/tv-shows" component={TVShows} />
       <Route path="/search" component={Search} />
       <Route path="/detail/:id" component={Detail} />
+      <Route path="/favorites" component={Favorites} /> {/* Added route for Favorites */}
       <Route component={NotFound} />
     </Switch>
   );

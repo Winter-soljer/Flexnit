@@ -2,19 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Heart, Play, Star, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Heart, Play, Star } from "lucide-react";
+import { useState, useEffect } from "react";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Media } from "@shared/schema";
 import { format } from "date-fns";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MediaRow from "@/components/MediaRow";
+import { addToFavorites, removeFromFavorites, isInFavorites } from "@/lib/favorites";
 
 interface Season {
   season_number: number;
@@ -43,6 +39,24 @@ export default function Detail() {
     enabled: !!id,
   });
 
+  // Ensure media is available before checking favorites
+  useEffect(() => {
+    if (media?.tmdbId && media?.type) {
+      setIsFavorite(isInFavorites(media.tmdbId, media.type));
+    }
+  }, [media]);
+
+  // Handle favorite toggling
+  const toggleFavorite = () => {
+    if (!media) return;
+    if (isFavorite) {
+      removeFromFavorites(media.tmdbId, media.type);
+    } else {
+      addToFavorites(media);
+    }
+    setIsFavorite(!isFavorite);
+  };
+
   if (isLoading) {
     return <Skeleton className="w-full h-screen" />;
   }
@@ -55,9 +69,7 @@ export default function Detail() {
     );
   }
 
-  const releaseDate = media.releaseDate ? 
-    format(new Date(media.releaseDate), 'MMMM d, yyyy') : 
-    'Release date unavailable';
+  const releaseDate = media.releaseDate ? format(new Date(media.releaseDate), 'MMMM d, yyyy') : 'Release date unavailable';
 
   if (isPlaying) {
     return (
@@ -66,8 +78,6 @@ export default function Detail() {
         season={selectedSeason}
         episode={selectedEpisode}
         onBack={() => setIsPlaying(false)}
-        setSelectedSeason={setSelectedSeason}
-        setSelectedEpisode={setSelectedEpisode}
       />
     );
   }
@@ -76,9 +86,7 @@ export default function Detail() {
     <div>
       <div
         className="h-[50vh] bg-cover bg-center relative"
-        style={{
-          backgroundImage: `url(https://image.tmdb.org/t/p/original${media.backdropPath})`,
-        }}
+        style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original${media.backdropPath})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
       </div>
@@ -93,7 +101,7 @@ export default function Detail() {
             />
 
             {media.type === 'tv' && media.seasons && (
-              <ScrollArea className="h-[400px] rounded-md border p-4">
+              <ScrollArea className="rounded-md border p-4" style={{ maxHeight: "80vh" }}>
                 <h3 className="text-lg font-semibold mb-4">Seasons</h3>
                 <Accordion type="single" collapsible>
                   {media.seasons.map((season) => (
@@ -130,10 +138,10 @@ export default function Detail() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={toggleFavorite}
                 className={isFavorite ? "text-red-500" : ""}
               >
-                <Heart className="h-6 w-6" />
+                <Heart className={`h-6 w-6 ${isFavorite ? "fill-red-500" : ""}`} />
               </Button>
             </div>
 

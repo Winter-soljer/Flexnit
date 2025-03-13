@@ -1,10 +1,22 @@
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { Media } from "@shared/schema";
-import Hero from "@/components/Hero";
 import MediaRow from "@/components/MediaRow";
+import { Media } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getRecommendationGenres, getFavorites } from "@/lib/favorites";
+import { useEffect, useState } from "react";
+import Hero from "@/components/Hero";
 
 export default function Home() {
+  const [recommendationGenres, setRecommendationGenres] = useState<string[]>([]);
+  const [hasFavorites, setHasFavorites] = useState(false);
+
+  // Get user's favorite genres for recommendations
+  useEffect(() => {
+    const favoriteGenres = getRecommendationGenres();
+    setRecommendationGenres(favoriteGenres);
+    setHasFavorites(getFavorites().length > 0);
+  }, []);
+
   const { data: trendingMovies, isLoading: isLoadingMovies } = useQuery<Media[]>({
     queryKey: ["/api/trending/movie"],
   });
@@ -29,7 +41,15 @@ export default function Home() {
     })),
   });
 
-  if (isLoadingMovies || isLoadingTVShows) {
+  // Fetch recommendations based on user's preferences if they have favorites
+  const { data: recommendations, isLoading: isLoadingRecommendations } = useQuery<Media[]>({
+    queryKey: ["/api/genre/movie/" + (recommendationGenres[0] || "28")],
+    enabled: recommendationGenres.length > 0
+  });
+
+
+  if (isLoadingMovies || isLoadingTVShows || genreQueries.some(q => q.isLoading) || 
+      (hasFavorites && isLoadingRecommendations)) {
     return <Skeleton className="w-full h-screen" />;
   }
 
@@ -42,6 +62,9 @@ export default function Home() {
       <Hero media={trendingMovies[0]} />
 
       <div className="container space-y-8 pt-8">
+        {hasFavorites && recommendations?.length > 0 && (
+          <MediaRow title="Recommended For You" media={recommendations} />
+        )}
         <MediaRow title="Trending Movies" media={trendingMovies} />
         <MediaRow title="Trending TV Shows" media={trendingTVShows} />
 
