@@ -79,13 +79,14 @@ export default function VideoPlayer({
 
   return (
     <div className="relative w-full h-[calc(100vh-140px)]">
-      <Button variant="outline" className="absolute left-4 top-4 z-10" onClick={onBack}>
+      {/* Back Button */}
+      <Button variant="outline" className="absolute left-4 top-4 z-30" onClick={onBack}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
 
       {/* Season Sidebar (for TV shows) */}
       {media.type === 'tv' && (
-        <div className="absolute left-0 top-0 w-[300px] h-full bg-background overflow-auto">
+        <div className="absolute left-0 top-0 w-[300px] h-full bg-background overflow-auto z-20">
           <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Seasons</h2>
             <div className="space-y-2">
@@ -151,14 +152,13 @@ export default function VideoPlayer({
         <iframe
           ref={iframeRef}
           src={getPlayerUrl()}
-          className="absolute inset-0 w-full h-full max-w-full max-h-full"
+          className="absolute inset-0 w-full h-full max-w-full max-h-full z-10"
           style={{
             marginLeft: media.type === 'tv' ? '300px' : '0',
             width: media.type === 'tv' ? 'calc(100% - 300px)' : '100%'
           }}
           allowFullScreen
           allow="autoplay; encrypted-media; picture-in-picture"
-          
           referrerPolicy="no-referrer"
         />
       </div>
