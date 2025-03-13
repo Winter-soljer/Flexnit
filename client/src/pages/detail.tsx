@@ -41,7 +41,7 @@ export default function Detail() {
     if (media) {
       setIsFavorite(isInFavorites(media.tmdbId, media.type));
     }
-  }, [media]);
+  }, [media?.tmdbId, media?.type]);
   
   // Handle favorite toggling
   const toggleFavorite = () => {
