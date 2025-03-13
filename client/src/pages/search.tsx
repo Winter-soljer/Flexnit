@@ -35,11 +35,18 @@ export default function Search() {
     return data.results || []; // Ensure it always returns an array
   };
 
-  const { data: results, isLoading, isError } = useQuery<Media[]>({
+  const { data: results, isLoading, isError, refetch } = useQuery<Media[]>({
     queryKey: ["/api/search", query],
     queryFn: fetchSearchResults,
     enabled: !!query, // Only fetch if query is not empty
   });
+
+  useEffect(() => {
+    if (query) {
+      refetch();
+    }
+  }, [query, refetch]);
+
 
   if (isLoading) {
     return (

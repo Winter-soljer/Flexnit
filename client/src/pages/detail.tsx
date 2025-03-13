@@ -3,7 +3,7 @@ import { useRoute } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Heart, Play, Star, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Media } from "@shared/schema";
 import { format } from "date-fns";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MediaRow from "@/components/MediaRow";
+import { addToFavorites, removeFromFavorites, isInFavorites } from "@/lib/favorites";
 
 interface Season {
   season_number: number;
@@ -34,6 +35,26 @@ export default function Detail() {
   const [match, params] = useRoute("/detail/:id");
   const [isPlaying, setIsPlaying] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  
+  // Check if the media is in favorites when it loads
+  useEffect(() => {
+    if (media) {
+      setIsFavorite(isInFavorites(media.tmdbId, media.type));
+    }
+  }, [media]);
+  
+  // Handle favorite toggling
+  const toggleFavorite = () => {
+    if (!media) return;
+    
+    if (isFavorite) {
+      removeFromFavorites(media.tmdbId, media.type);
+    } else {
+      addToFavorites(media);
+    }
+    
+    setIsFavorite(!isFavorite);
+  };
   const [selectedSeason, setSelectedSeason] = useState<number>();
   const [selectedEpisode, setSelectedEpisode] = useState<number>();
   const id = params?.id;
@@ -130,10 +151,10 @@ export default function Detail() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={toggleFavorite}
                 className={isFavorite ? "text-red-500" : ""}
               >
-                <Heart className="h-6 w-6" />
+                <Heart className={`h-6 w-6 ${isFavorite ? "fill-red-500" : ""}`} />
               </Button>
             </div>
 
