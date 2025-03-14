@@ -28,20 +28,6 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
-        <Navbar />
-        <main className="pt-14">
-          <Router />
-        </main>
-      </div>
-      <Toaster />
-    </QueryClientProvider>
-  );
-}
-
-const App = () => {
-  return (
     <HelmetProvider>
       <Helmet>
         <script
@@ -50,10 +36,19 @@ const App = () => {
           crossOrigin="anonymous"
         ></script>
       </Helmet>
-      <YourComponents />
+
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen bg-background text-foreground">
+          <Navbar />
+          <main className="pt-14">
+            <Router />
+          </main>
+        </div>
+        <Toaster />
+      </QueryClientProvider>
     </HelmetProvider>
   );
-};
+}
 
 
 export default App;
