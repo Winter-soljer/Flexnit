@@ -9,7 +9,8 @@ import TVShows from "@/pages/tv-shows";
 import Detail from "@/pages/detail";
 import Search from "@/pages/search";
 import NotFound from "@/pages/not-found";
-import Favorites from "@/pages/favorites"; // Added import for Favorites page
+import Favorites from "@/pages/favorites";
+import { Helmet, HelmetProvider } from "react-helmet-async";// Added import for Favorites page
 
 function Router() {
   return (
@@ -38,5 +39,21 @@ function App() {
     </QueryClientProvider>
   );
 }
+
+const App = () => {
+  return (
+    <HelmetProvider>
+      <Helmet>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3969218076293408"
+          crossOrigin="anonymous"
+        ></script>
+      </Helmet>
+      <YourComponents />
+    </HelmetProvider>
+  );
+};
+
 
 export default App;
