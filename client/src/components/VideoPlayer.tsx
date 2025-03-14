@@ -57,7 +57,7 @@ export default function VideoPlayer({
   }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
 
   const getPlayerUrl = () => {
-    const baseUrl = 'https://multiembed.mov/?';
+    const baseUrl = 'http://flexnitplayer.ct.ws/flexnit_player.php?';
     const params = new URLSearchParams();
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');
