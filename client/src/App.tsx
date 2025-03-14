@@ -14,12 +14,12 @@ import Favorites from "@/pages/favorites"; // Added import for Favorites page
 function Router() {
   return (
     <Switch>
-      <Route path="./" component={Home} />
-      <Route path="./movies" component={Movies} />
-      <Route path="./tv-shows" component={TVShows} />
-      <Route path="./search" component={Search} />
-      <Route path="./detail/:id" component={Detail} />
-      <Route path="./favorites" component={Favorites} /> {/* Added route for Favorites */}
+      <Route path="/" component={Home} />
+      <Route path="/movies" component={Movies} />
+      <Route path="/tv-shows" component={TVShows} />
+      <Route path="/search" component={Search} />
+      <Route path="/detail/:id" component={Detail} />
+      <Route path="/favorites" component={Favorites} /> {/* Added route for Favorites */}
       <Route component={NotFound} />
     </Switch>
   );
