@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Media } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -33,6 +33,7 @@ export default function VideoPlayer({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [selectedSeason, setSelectedSeason] = useState<number | null>(season || null);
   const [selectedEpisode, setSelectedEpisode] = useState<number | null>(episode || null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar toggle state
 
   // Fetch seasons from API
   const { data: seasons = [] } = useQuery<Season[]>({
@@ -56,25 +57,27 @@ export default function VideoPlayer({
     }
   }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
 
+  // Build the player URL
   const getPlayerUrl = () => {
-    const baseUrl = 'https://multiembed.mov/?';
-    const params = new URLSearchParams();
-    params.append('video_id', media.tmdbId.toString());
-    params.append('tmdb', '1');
+    const baseUrl = media.type === 'movie' 
+      ? `https://vidlink.pro/movie/${media.tmdbId}` 
+      : `https://vidlink.pro/tv/${media.tmdbId}/${selectedSeason}/${selectedEpisode}`;
 
-    if (media.type === 'tv' && selectedSeason !== null && selectedEpisode !== null) {
-      params.append('s', selectedSeason.toString());
-      params.append('e', selectedEpisode.toString());
-    }
-
-    console.log("Player URL params:", {
-      media_id: media.tmdbId,
-      type: media.type,
-      season: selectedSeason,
-      episode: selectedEpisode
+    const params = new URLSearchParams({
+      primaryColor: "e60a15",
+      secondaryColor: "a2a2a2",
+      iconColor: "eefdec",
+      icons: "vid",
+      player: "jw",
+      title: "true",
+      poster: "true",
+      autoplay: "true",
+      nextbutton: "true"
     });
+
+    console.log("Player URL:", `${baseUrl}?${params.toString()}`);
     
-    return `${baseUrl}${params.toString()}`;
+    return `${baseUrl}?${params.toString()}`;
   };
 
   return (
@@ -84,8 +87,19 @@ export default function VideoPlayer({
         <ArrowLeft className="mr-2 h-4 w-4" /> Back
       </Button>
 
-      {/* Season Sidebar (for TV shows) */}
+      {/* Sidebar Toggle Button */}
       {media.type === 'tv' && (
+        <Button 
+          variant="outline" 
+          className="absolute left-[320px] top-4 z-30"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          <Menu className="h-4 w-4" /> {isSidebarOpen ? "Hide" : "Show"} Sidebar
+        </Button>
+      )}
+
+      {/* Season Sidebar (for TV shows) */}
+      {media.type === 'tv' && isSidebarOpen && (
         <div className="absolute left-0 top-0 w-[300px] h-full bg-background overflow-auto z-20">
           <div className="p-4">
             <h2 className="text-xl font-bold mb-4">Seasons</h2>
@@ -154,8 +168,8 @@ export default function VideoPlayer({
           src={getPlayerUrl()}
           className="absolute inset-0 w-full h-full max-w-full max-h-full z-10"
           style={{
-            marginLeft: media.type === 'tv' ? '300px' : '0',
-            width: media.type === 'tv' ? 'calc(100% - 300px)' : '100%'
+            marginLeft: media.type === 'tv' && isSidebarOpen ? '300px' : '0',
+            width: media.type === 'tv' && isSidebarOpen ? 'calc(100% - 300px)' : '100%'
           }}
           allowFullScreen
           allow="autoplay; encrypted-media; picture-in-picture"
