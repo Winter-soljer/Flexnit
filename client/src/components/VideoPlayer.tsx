@@ -57,35 +57,6 @@ export default function VideoPlayer({
     }
   }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
 
-  // Block ad requests
-  useEffect(() => {
-    const blockAds = () => {
-      const adDomains = ["ads.jwplatform.com", "imasdk.googleapis.com"];
-
-      // Override XMLHttpRequest
-      const originalOpen = XMLHttpRequest.prototype.open;
-      XMLHttpRequest.prototype.open = function (method, url) {
-        if (adDomains.some(domain => url.includes(domain))) {
-          console.log("Blocked Ad Request:", url);
-          return;
-        }
-        return originalOpen.apply(this, arguments);
-      };
-
-      // Override fetch
-      const originalFetch = window.fetch;
-      window.fetch = async function (url, ...args) {
-        if (typeof url === "string" && adDomains.some(domain => url.includes(domain))) {
-          console.log("Blocked Fetch Ad Request:", url);
-          return new Response(null, { status: 204 });
-        }
-        return originalFetch(url, ...args);
-      };
-    };
-
-    blockAds();
-  }, []);
-
   // Build the player URL
   const getPlayerUrl = () => {
     const baseUrl = media.type === 'movie' 
@@ -93,7 +64,13 @@ export default function VideoPlayer({
       : `https://vidlink.pro/tv/${media.tmdbId}/${selectedSeason}/${selectedEpisode}`;
 
     const params = new URLSearchParams({
+      primaryColor: "e60a15",
+      secondaryColor: "a2a2a2",
+      iconColor: "eefdec",
+      icons: "vid",
       player: "jw",
+      title: "true",
+      poster: "true",
       autoplay: "true",
       nextbutton: "true"
     });
@@ -133,7 +110,7 @@ export default function VideoPlayer({
                     className="cursor-pointer py-3 px-4 hover:bg-background/30 flex items-center justify-between"
                     onClick={() => {
                       if (selectedSeason === season.season_number) {
-                        setSelectedSeason(null);
+                        setSelectedSeason(null); // Toggle off if already selected
                       } else {
                         setSelectedSeason(season.season_number);
                       }
