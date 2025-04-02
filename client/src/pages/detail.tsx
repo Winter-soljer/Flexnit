@@ -39,9 +39,10 @@ export default function Detail() {
     enabled: !!id,
   });
 
-  // Ensure media is available before checking favorites
+  // Initialize favorite state after media loads
   useEffect(() => {
-    if (media?.tmdbId && media?.type) {
+    // Only run this effect when media is defined
+    if (media && media.tmdbId !== undefined && media.type) {
       setIsFavorite(isInFavorites(media.tmdbId, media.type));
     }
   }, [media]);

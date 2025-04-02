@@ -39,6 +39,11 @@ export default function Navbar() {
               TV Shows
             </a>
           </Link>
+          <Link href="/favorites">
+            <a className="text-sm font-medium transition-colors hover:text-primary">
+              Favorites
+            </a>
+          </Link>
         </div>
 
         <form onSubmit={handleSearch} className="ml-auto flex items-center space-x-2">

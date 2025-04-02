@@ -37,8 +37,8 @@ export default function MediaCard({ media, posterPath }: MediaCardProps) {
 
   const handleMouseEnter = () => {
     timeoutRef.current = window.setTimeout(() => {
-      setIsHovered(false);
-    }, 500);
+      setIsHovered(true);
+    }, 700); // Give a small delay before showing the preview
   };
 
   const handleMouseLeave = () => {
@@ -55,14 +55,15 @@ export default function MediaCard({ media, posterPath }: MediaCardProps) {
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
     >
-      <Card className="overflow-hidden cursor-pointer transition-transform duration-200 group-hover:scale-110 group-hover:z-10">
-        {isHovered && media.trailerKey ? (
+      <Card className="overflow-hidden cursor-pointer transition-all duration-200 group-hover:scale-105 group-hover:z-10 group-hover:shadow-xl">
+        {isHovered ? (
           <VideoPreview media={media} />
         ) : (
           <img
             src={posterPath || `https://image.tmdb.org/t/p/w500${media.posterPath}`}
             alt={media.title}
             className="w-full aspect-[2/3] object-cover"
+            loading="lazy"
           />
         )}
       </Card>

@@ -17,18 +17,22 @@ export default function Home() {
     setHasFavorites(getFavorites().length > 0);
   }, []);
 
+  // Fetch trending movies
   const { data: trendingMovies, isLoading: isLoadingMovies } = useQuery<Media[]>({
     queryKey: ["/api/trending/movie"],
   });
 
+  // Fetch trending TV shows
   const { data: trendingTVShows, isLoading: isLoadingTVShows } = useQuery<Media[]>({
     queryKey: ["/api/trending/tv"],
   });
 
+  // Fetch movie genres
   const { data: movieGenres } = useQuery<{ id: number, name: string }[]>({
     queryKey: ["/api/genres/movie"],
   });
 
+  // Fetch movies by genre (first 4 genres only)
   const genreQueries = useQueries({
     queries: (movieGenres || []).slice(0, 4).map((genre) => ({
       queryKey: [`/api/genre/movie/${genre.id}`, genre.id],
@@ -41,15 +45,26 @@ export default function Home() {
     })),
   });
 
-  // Fetch recommendations based on user's preferences if they have favorites
-  const { data: recommendations, isLoading: isLoadingRecommendations } = useQuery<Media[]>({
-    queryKey: ["/api/genre/movie/" + (recommendationGenres[0] || "28")],
-    enabled: recommendationGenres.length > 0
+  // Fetch recommendations based on user's preferences (if they have favorites)
+  const recommendationQueries = useQueries({
+    queries: recommendationGenres.slice(0, 3).map((genre) => ({
+      queryKey: [`/api/genre/movie/${genre}`],
+      queryFn: async () => {
+        const res = await fetch(`/api/genre/movie/${genre}`);
+        if (!res.ok) throw new Error("Failed to fetch recommendations");
+        return res.json();
+      },
+      enabled: !!genre && hasFavorites,
+    })),
   });
 
+  const recommendationsData = recommendationQueries
+    .filter(query => query.data)
+    .flatMap(query => query.data || [])
+    .slice(0, 10);
 
-  if (isLoadingMovies || isLoadingTVShows || genreQueries.some(q => q.isLoading) || 
-      (hasFavorites && isLoadingRecommendations)) {
+  if (isLoadingMovies || isLoadingTVShows || 
+      (hasFavorites && recommendationQueries.some(q => q.isLoading))) {
     return <Skeleton className="w-full h-screen" />;
   }
 
@@ -62,8 +77,8 @@ export default function Home() {
       <Hero media={trendingMovies[0]} />
 
       <div className="container space-y-8 pt-8">
-        {hasFavorites && recommendations?.length > 0 && (
-          <MediaRow title="Recommended For You" media={recommendations} />
+        {hasFavorites && recommendationsData.length > 0 && (
+          <MediaRow title="Recommended For You" media={recommendationsData} />
         )}
         <MediaRow title="Trending Movies" media={trendingMovies} />
         <MediaRow title="Trending TV Shows" media={trendingTVShows} />
