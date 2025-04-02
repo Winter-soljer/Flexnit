@@ -17,18 +17,22 @@ export default function Home() {
     setHasFavorites(getFavorites().length > 0);
   }, []);
 
+  // Fetch trending movies
   const { data: trendingMovies, isLoading: isLoadingMovies } = useQuery<Media[]>({
     queryKey: ["/api/trending/movie"],
   });
 
+  // Fetch trending TV shows
   const { data: trendingTVShows, isLoading: isLoadingTVShows } = useQuery<Media[]>({
     queryKey: ["/api/trending/tv"],
   });
 
+  // Fetch movie genres
   const { data: movieGenres } = useQuery<{ id: number, name: string }[]>({
     queryKey: ["/api/genres/movie"],
   });
 
+  // Fetch movies by genre (first 4 genres only)
   const genreQueries = useQueries({
     queries: (movieGenres || []).slice(0, 4).map((genre) => ({
       queryKey: [`/api/genre/movie/${genre.id}`, genre.id],
@@ -41,8 +45,8 @@ export default function Home() {
     })),
   });
 
-  // Fetch recommendations based on user's preferences if they have favorites
-  const genreQueries = useQueries({
+  // Fetch recommendations based on user's preferences (if they have favorites)
+  const recommendationQueries = useQueries({
     queries: recommendationGenres.slice(0, 3).map((genre) => ({
       queryKey: [`/api/genre/movie/${genre}`],
       queryFn: async () => {
@@ -54,13 +58,13 @@ export default function Home() {
     })),
   });
 
-  const recommendationsData = genreQueries
+  const recommendationsData = recommendationQueries
     .filter(query => query.data)
     .flatMap(query => query.data || [])
     .slice(0, 10);
 
   if (isLoadingMovies || isLoadingTVShows || 
-      (hasFavorites && genreQueries.some(q => q.isLoading))) {
+      (hasFavorites && recommendationQueries.some(q => q.isLoading))) {
     return <Skeleton className="w-full h-screen" />;
   }
 

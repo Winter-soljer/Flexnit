@@ -57,10 +57,15 @@ export default function VideoPlayer({
   }, [selectedSeason, selectedEpisode, setParentSelectedSeason, setParentSelectedEpisode]);
 
   const getPlayerUrl = () => {
-    const baseUrl = 'https://multiembed.mov/?';
+    // Using the required format with "?" at the end of .php
+    // Add the protocol to make sure it's properly loaded
+    const baseUrl = 'https://flexnitplayer.ct.ws/flexnit_player.php?';
     const params = new URLSearchParams();
     params.append('video_id', media.tmdbId.toString());
     params.append('tmdb', '1');
+    
+    // Add parameter to bypass ad blocking
+    params.append('block_ads', '1');
 
     if (media.type === 'tv' && selectedSeason !== null && selectedEpisode !== null) {
       params.append('s', selectedSeason.toString());
@@ -158,8 +163,10 @@ export default function VideoPlayer({
             width: media.type === 'tv' ? 'calc(100% - 300px)' : '100%'
           }}
           allowFullScreen
-          allow="autoplay; encrypted-media; picture-in-picture"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           referrerPolicy="no-referrer"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
+          loading="lazy"
         />
       </div>
     </div>
