@@ -1,27 +1,60 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import MediaCard from "@/components/MediaCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Media } from "@shared/schema";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search as SearchIcon } from "lucide-react";
 
 export default function Search() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [query, setQuery] = useState("");
-
+  const [inputQuery, setInputQuery] = useState("");
+  
+  // Initialize inputQuery and query from URL params
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    setQuery(searchParams.get("q")?.trim() || "");
+    const urlQuery = searchParams.get("q")?.trim() || "";
+    setQuery(urlQuery);
+    setInputQuery(urlQuery);
   }, [location]);
+  
+  // Handle search form submission
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    if (inputQuery.trim()) {
+      setQuery(inputQuery.trim());
+      
+      // Update URL for sharing/bookmarking without page refresh
+      const url = new URL(window.location.href);
+      url.searchParams.set("q", inputQuery.trim());
+      window.history.pushState({}, "", url.toString());
+    }
+  };
+
+  // Define TMDB API result interface
+  interface TMDBSearchResult {
+    id: number;
+    media_type: string;
+    title?: string;
+    name?: string;
+    overview: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    release_date?: string;
+    first_air_date?: string;
+    vote_average: number;
+    popularity: number;
+    genre_ids: number[];
+  }
 
   const fetchSearchResults = async () => {
     if (!query) return []; // Prevent API call if query is empty
 
-    const url = `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(
-      query
-    )}&page=1&api_key=dade4c57dbabc51b2888699212978cac`;
-
-    console.log("Fetching:", url); // Debugging log
+    const url = `/api/search?query=${encodeURIComponent(query)}`;
+    console.log("Fetching search results");
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -30,9 +63,30 @@ export default function Search() {
     }
 
     const data = await response.json();
-    console.log("Search results:", data.results); // Debugging log
-
-    return data.results || []; // Ensure it always returns an array
+    
+    // Filter and map TMDB results to our Media type
+    return (data.results || [])
+      .filter((item: TMDBSearchResult) => 
+        (item.media_type === 'movie' || item.media_type === 'tv') && 
+        (item.poster_path || item.backdrop_path)
+      )
+      .map((item: TMDBSearchResult) => {
+        return {
+          id: -item.id, // Using negative numbers to distinguish from real IDs
+          tmdbId: item.id,
+          type: item.media_type || 'movie',
+          title: item.title || item.name || '',
+          overview: item.overview || '',
+          posterPath: item.poster_path,
+          backdropPath: item.backdrop_path,
+          releaseDate: item.release_date || item.first_air_date || null,
+          voteAverage: item.vote_average || null,
+          popularity: item.popularity || null,
+          genres: item.genre_ids?.map(String) || [],
+          trailerKey: null,
+          lastUpdated: null
+        };
+      });
   };
 
   const { data: results, isLoading, isError, refetch } = useQuery<Media[]>({
@@ -64,6 +118,20 @@ export default function Search() {
 
   return (
     <div className="container pt-8">
+      {/* Search form */}
+      <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+        <Input
+          type="text"
+          placeholder="Search movies, TV shows, actors..."
+          value={inputQuery}
+          onChange={(e) => setInputQuery(e.target.value)}
+          className="flex-grow"
+        />
+        <Button type="submit">
+          <SearchIcon className="h-4 w-4 mr-2" /> Search
+        </Button>
+      </form>
+      
       <h1 className="text-4xl font-bold mb-8">Search Results for "{query}"</h1>
 
       {!results?.length ? (
@@ -72,37 +140,14 @@ export default function Search() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {results.map((media) => {
             // Determine the appropriate image URL based on the media type
-            const posterPath = media.poster_path
-              ? `https://image.tmdb.org/t/p/w500${media.poster_path}`
+            const posterPath = media.posterPath
+              ? `https://image.tmdb.org/t/p/w500${media.posterPath}`
               : "https://via.placeholder.com/500x750?text=No+Image"; // Placeholder image for missing posters
-
-            // First, let's fetch the media from the database to get the correct ID
-            // We'll create a proper Media object that maps TMDB API fields to our schema
-            // but we'll use a client-side temporary ID approach for search results
-            // When the user clicks, we'll search by tmdbId instead
-            const tmdbId = media.id;
-            const mediaItem: Media = {
-              // Use a temporary negative ID for client-side purposes
-              // This ensures it won't conflict with real IDs from the database
-              id: -tmdbId, // Using negative numbers to distinguish from real IDs
-              tmdbId: tmdbId,
-              type: media.media_type || 'movie',
-              title: media.title || media.name || '',
-              overview: media.overview || '',
-              posterPath: media.poster_path,
-              backdropPath: media.backdrop_path,
-              releaseDate: media.release_date || media.first_air_date,
-              voteAverage: media.vote_average,
-              popularity: media.popularity,
-              genres: media.genre_ids?.map(String) || [],
-              trailerKey: null,
-              lastUpdated: null
-            };
-
+              
             return (
               <MediaCard
-                key={mediaItem.id}
-                media={mediaItem}
+                key={media.id}
+                media={media}
                 posterPath={posterPath} // Pass the poster path to the MediaCard
               />
             );

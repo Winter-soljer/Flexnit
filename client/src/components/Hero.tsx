@@ -1,6 +1,6 @@
 import { Media } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Download, Layers } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface HeroProps {
@@ -26,14 +26,33 @@ export default function Hero({ media }: HeroProps) {
         <p className="text-lg max-w-xl mb-8 text-muted-foreground">
           {media.overview}
         </p>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-4">
+          <Button 
+            size="lg" 
+            onClick={() => window.open('https://mega.nz/file/k3pVkKqS#_iuZLad4mBtIIreBtkR-_-kzS7LJUgLuPoOYzxSaYUA', '_blank')}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Layers className="mr-2 h-5 w-5" /> Get App
+          </Button>
+          
           {media.trailerKey && (
-            <Button size="lg" onClick={() => setLocation(`/watch/${media.id}`)}>
-              <Play className="mr-2 h-4 w-4" /> Play
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={() => setLocation(`/detail/${media.id}`)}
+              className="border-white/20 hover:bg-white/10"
+            >
+              <Play className="mr-2 h-5 w-5" /> Play
             </Button>
           )}
-          <Button size="lg" variant="secondary" onClick={() => setLocation(`/detail/${media.id}`)}>
-            <Info className="mr-2 h-4 w-4" /> More Info
+          
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            onClick={() => setLocation(`/detail/${media.id}`)}
+            className="bg-white/10 hover:bg-white/20 text-white"
+          >
+            <Info className="mr-2 h-5 w-5" /> More Info
           </Button>
         </div>
       </div>

@@ -57,21 +57,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/search', async (req, res) => {
     try {
-      const { q } = req.query;
-      if (!q || typeof q !== 'string') {
+      const { query } = req.query;
+      if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: 'Search query required' });
       }
-      const results = await search(q);
-      const mediaResults = await Promise.all(
-        results
-          .filter((item: any) => 
-            (item.media_type === 'movie' || item.media_type === 'tv') && 
-            item.poster_path && 
-            item.backdrop_path
-          )
-          .map((item: any) => storage.processAndCacheMedia(item, item.media_type))
-      );
-      res.json(mediaResults.filter(Boolean));
+      const results = await search(query);
+      res.json({ results });
     } catch (error) {
       console.error('Search error:', error);
       res.status(500).json({ message: 'Search failed' });
