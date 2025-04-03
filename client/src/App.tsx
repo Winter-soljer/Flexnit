@@ -10,7 +10,8 @@ import TVShows from "@/pages/tv-shows";
 import Detail from "@/pages/detail";
 import Search from "@/pages/search";
 import NotFound from "@/pages/not-found";
-import Favorites from "@/pages/favorites"; // Added import for Favorites page
+import Favorites from "@/pages/favorites";
+import { Helmet, HelmetProvider } from "react-helmet-async";// Added import for Favorites page
 
 function Router() {
   return (
@@ -28,17 +29,28 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <Navbar />
-        <main className="pt-14 flex-grow">
-          <Router />
-        </main>
-        <Footer />
-      </div>
-      <Toaster />
-    </QueryClientProvider>
+    <HelmetProvider>
+      <Helmet>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3969218076293408"
+          crossOrigin="anonymous"
+        ></script>
+      </Helmet>
+
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
+          <Navbar />
+          <main className="pt-14 flex-grow">
+            <Router />
+          </main>
+          <Footer />
+        </div>
+        <Toaster />
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
+
 
 export default App;
