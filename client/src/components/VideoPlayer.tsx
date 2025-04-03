@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { ArrowLeft, ChevronDown, ChevronRight, Eye, EyeOff, Tv2, Film, Layers } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Eye, EyeOff, Tv2, Film, Layers, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Media } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -72,7 +72,7 @@ export default function VideoPlayer({
       params.append('e', selectedEpisode.toString());
     }
     
-    return `${baseUrl}${params.toString()}`;
+    return `${baseUrl}?${params.toString()}`;
   };
 
   // Get URL for the multi-embed player
