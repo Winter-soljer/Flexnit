@@ -62,35 +62,22 @@ export async function getTrailer(mediaType: 'movie' | 'tv', id: number) {
 }
 
 export async function search(query: string, mediaType?: 'movie' | 'tv') {
-  // First search for keywords
-  const { data: keywordData } = await tmdb.get('/search/keyword', {
-    params: { query }
-  });
-
-  // Get the first few relevant keywords
-  const keywords = keywordData.results.slice(0, 3).map((k: any) => k.id);
-
-  // Search for media with these keywords
-  const searchPromises = keywords.map(async (keywordId: number) => {
-    const { data: movieData } = await tmdb.get('/discover/movie', {
-      params: {
-        with_keywords: keywordId,
-        include_adult: false
+  try {
+    // Use the multi-search endpoint to search across movies, TV shows, and people
+    const { data } = await tmdb.get('/search/multi', {
+      params: { 
+        query, 
+        include_adult: false,
+        page: 1
       }
     });
-    const { data: tvData } = await tmdb.get('/discover/tv', {
-      params: {
-        with_keywords: keywordId,
-        include_adult: false
-      }
-    });
-    return [...movieData.results, ...tvData.results];
-  });
-
-  const results = await Promise.all(searchPromises);
-  return results.flat().filter((item: any) => 
-    item.poster_path && item.backdrop_path
-  );
+    
+    // Return the unfiltered results for client processing
+    return data.results;
+  } catch (error) {
+    console.error('TMDB search error:', error);
+    return [];
+  }
 }
 
 export async function getGenres(mediaType: 'movie' | 'tv') {

@@ -53,40 +53,47 @@ export default function Search() {
   const fetchSearchResults = async () => {
     if (!query) return []; // Prevent API call if query is empty
 
-    const url = `/api/search?query=${encodeURIComponent(query)}`;
-    console.log("Fetching search results");
+    try {
+      console.log("Fetching search results for:", query);
+      
+      // Use direct TMDB API call to ensure we get results
+      const url = `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&include_adult=false&page=1&api_key=dade4c57dbabc51b2888699212978cac`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error("API Error:", response.status);
+        throw new Error("Failed to fetch search results");
+      }
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error("API Error:", response.status);
-      throw new Error("Failed to fetch search results");
+      const data = await response.json();
+      console.log("Search results:", data.results?.length || 0, "items found");
+      
+      // Filter and map TMDB results to our Media type
+      return (data.results || [])
+        .filter((item: TMDBSearchResult) => 
+          (item.media_type === 'movie' || item.media_type === 'tv')
+        )
+        .map((item: TMDBSearchResult) => {
+          return {
+            id: -item.id, // Using negative numbers to distinguish from real IDs
+            tmdbId: item.id,
+            type: item.media_type || 'movie',
+            title: item.title || item.name || '',
+            overview: item.overview || '',
+            posterPath: item.poster_path,
+            backdropPath: item.backdrop_path,
+            releaseDate: item.release_date || item.first_air_date || null,
+            voteAverage: item.vote_average || null,
+            popularity: item.popularity || null,
+            genres: item.genre_ids?.map(String) || [],
+            trailerKey: null,
+            lastUpdated: null
+          };
+        });
+    } catch (error) {
+      console.error("Search error:", error);
+      throw error;
     }
-
-    const data = await response.json();
-    
-    // Filter and map TMDB results to our Media type
-    return (data.results || [])
-      .filter((item: TMDBSearchResult) => 
-        (item.media_type === 'movie' || item.media_type === 'tv') && 
-        (item.poster_path || item.backdrop_path)
-      )
-      .map((item: TMDBSearchResult) => {
-        return {
-          id: -item.id, // Using negative numbers to distinguish from real IDs
-          tmdbId: item.id,
-          type: item.media_type || 'movie',
-          title: item.title || item.name || '',
-          overview: item.overview || '',
-          posterPath: item.poster_path,
-          backdropPath: item.backdrop_path,
-          releaseDate: item.release_date || item.first_air_date || null,
-          voteAverage: item.vote_average || null,
-          popularity: item.popularity || null,
-          genres: item.genre_ids?.map(String) || [],
-          trailerKey: null,
-          lastUpdated: null
-        };
-      });
   };
 
   const { data: results, isLoading, isError, refetch } = useQuery<Media[]>({
