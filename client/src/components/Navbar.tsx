@@ -10,7 +10,10 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      setLocation(`/search?q=${encodeURIComponent(search)}`);
+      // Update URL with search query parameter
+      const url = `/search?q=${encodeURIComponent(search.trim())}`;
+      setLocation(url);
+      setSearch(""); // Clear search input after submitting
     }
   };
 
@@ -19,6 +22,7 @@ export default function Navbar() {
       <div className="container flex h-14 items-center">
         <Link href="/">
           <a className="flex items-center space-x-2">
+            <img src="/flexnit-logo.svg" alt="Flexnit Logo" className="h-8 w-8" />
             <h1 className="text-2xl font-bold text-primary">FLEXNIT</h1>
           </a>
         </Link>

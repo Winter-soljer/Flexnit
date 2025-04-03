@@ -38,7 +38,7 @@ export default function MediaCard({ media, posterPath }: MediaCardProps) {
   const handleMouseEnter = () => {
     timeoutRef.current = window.setTimeout(() => {
       setIsHovered(true);
-    }, 700); // Give a small delay before showing the preview
+    }, 500); // Faster response time for preview
   };
 
   const handleMouseLeave = () => {
