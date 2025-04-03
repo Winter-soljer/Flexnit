@@ -235,7 +235,6 @@ export default function VideoPlayer({
           allowFullScreen
           allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
           referrerPolicy="no-referrer"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
           loading="lazy"
         />
       </div>
