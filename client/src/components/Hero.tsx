@@ -35,16 +35,7 @@ export default function Hero({ media }: HeroProps) {
             <Layers className="mr-2 h-5 w-5" /> Get App
           </Button>
           
-          {media.trailerKey && (
-            <Button 
-              size="lg" 
-              variant="outline" 
-              onClick={() => setLocation(`/detail/${media.id}`)}
-              className="border-white/20 hover:bg-white/10"
-            >
-              <Play className="mr-2 h-5 w-5" /> Play
-            </Button>
-          )}
+          {/* Play button removed as requested */}
           
           <Button 
             size="lg" 

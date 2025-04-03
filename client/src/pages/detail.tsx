@@ -102,34 +102,36 @@ export default function Detail() {
             />
 
             {media.type === 'tv' && media.seasons && (
-              <ScrollArea className="rounded-md border p-4" style={{ maxHeight: "80vh" }}>
+              <div className="rounded-md border p-4 custom-scrollbar-container">
                 <h3 className="text-lg font-semibold mb-4">Seasons</h3>
-                <Accordion type="single" collapsible>
-                  {media.seasons.map((season) => (
-                    <AccordionItem key={season.season_number} value={`season-${season.season_number}`}>
-                      <AccordionTrigger>{season.name}</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-2">
-                          {season.episodes.map((episode) => (
-                            <Button
-                              key={episode.episode_number}
-                              variant="ghost"
-                              className="w-full justify-start"
-                              onClick={() => {
-                                setSelectedSeason(season.season_number);
-                                setSelectedEpisode(episode.episode_number);
-                                setIsPlaying(true);
-                              }}
-                            >
-                              {episode.episode_number}. {episode.name}
-                            </Button>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </ScrollArea>
+                <div className="overflow-y-auto pr-2" style={{ maxHeight: "80vh" }}>
+                  <Accordion type="single" collapsible>
+                    {media.seasons.map((season) => (
+                      <AccordionItem key={season.season_number} value={`season-${season.season_number}`}>
+                        <AccordionTrigger>{season.name}</AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-2">
+                            {season.episodes.map((episode) => (
+                              <Button
+                                key={episode.episode_number}
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onClick={() => {
+                                  setSelectedSeason(season.season_number);
+                                  setSelectedEpisode(episode.episode_number);
+                                  setIsPlaying(true);
+                                }}
+                              >
+                                {episode.episode_number}. {episode.name}
+                              </Button>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              </div>
             )}
           </div>
 

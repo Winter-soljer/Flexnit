@@ -14,20 +14,30 @@
 
 @layer utilities {
   /* Custom scrollbar styling */
-  .custom-scrollbar::-webkit-scrollbar {
+  .custom-scrollbar::-webkit-scrollbar,
+  .custom-scrollbar-container ::-webkit-scrollbar {
     width: 8px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .custom-scrollbar::-webkit-scrollbar-track,
+  .custom-scrollbar-container ::-webkit-scrollbar-track {
     @apply bg-muted/50 rounded-full;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
+  .custom-scrollbar::-webkit-scrollbar-thumb,
+  .custom-scrollbar-container ::-webkit-scrollbar-thumb {
     @apply bg-primary/50 rounded-full;
     border-radius: 8px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover,
+  .custom-scrollbar-container ::-webkit-scrollbar-thumb:hover {
     @apply bg-primary;
+  }
+  
+  /* Make sure overflow divs show the scrollbar */
+  .custom-scrollbar-container .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
   }
 }

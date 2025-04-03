@@ -35,7 +35,7 @@ export default function VideoPlayer({
   const [selectedSeason, setSelectedSeason] = useState<number | null>(season || null);
   const [selectedEpisode, setSelectedEpisode] = useState<number | null>(episode || null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [currentPlayer, setCurrentPlayer] = useState<'default' | 'multi' | 'alt'>('default');
+  const [currentPlayer, setCurrentPlayer] = useState<'multi' | 'alt'>('multi');
 
   // Fetch seasons from API
   const { data: seasons = [] } = useQuery<Season[]>({
@@ -95,14 +95,7 @@ export default function VideoPlayer({
 
   // Get the current player URL based on selection
   const getCurrentPlayerUrl = () => {
-    switch (currentPlayer) {
-      case 'multi':
-        return getMultiEmbedUrl();
-      case 'alt':
-        return getAltPlayerUrl();
-      default:
-        return getDefaultPlayerUrl();
-    }
+    return currentPlayer === 'multi' ? getMultiEmbedUrl() : getAltPlayerUrl();
   };
 
   // Toggle sidebar visibility
@@ -211,11 +204,12 @@ export default function VideoPlayer({
           left: media.type === 'tv' && sidebarVisible ? '300px' : '0'
         }}
       >
-        <Tabs defaultValue="default" onValueChange={(value) => setCurrentPlayer(value as 'default' | 'multi' | 'alt')}>
-          <TabsList className="grid grid-cols-3">
-            <TabsTrigger value="default">
-              <Film className="h-4 w-4 mr-2" /> Default Player
-            </TabsTrigger>
+        <Tabs defaultValue="multi" onValueChange={(value) => {
+            if (value === 'multi' || value === 'alt') {
+              setCurrentPlayer(value);
+            }
+          }}>
+          <TabsList className="grid grid-cols-2">
             <TabsTrigger value="multi">
               <Tv2 className="h-4 w-4 mr-2" /> Multi Player
             </TabsTrigger>
