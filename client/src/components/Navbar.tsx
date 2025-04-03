@@ -10,8 +10,10 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      // Update URL with search query parameter
-      const url = `/search?q=${encodeURIComponent(search.trim())}`;
+      // Fix: Update URL to match what the search page expects
+      const searchQuery = search.trim();
+      console.log("Searching for:", searchQuery);
+      const url = `/search?q=${encodeURIComponent(searchQuery)}`;
       setLocation(url);
       setSearch(""); // Clear search input after submitting
     }
