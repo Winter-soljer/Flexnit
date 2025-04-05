@@ -13,7 +13,7 @@ export default function Footer() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => window.open('https://mega.nz/file/k3pVkKqS#_iuZLad4mBtIIreBtkR-_-kzS7LJUgLuPoOYzxSaYUA', '_blank')}
+            onClick={() => window.open('https://mega.nz/file/AvYQmZpZ#mkBjdwFtnqWh0Drl5yvivTxjIEqK7ac_ivTryaa58uE', '_blank')}
           >
             <Layers className="mr-2 h-4 w-4" /> Get Mobile App
           </Button>
