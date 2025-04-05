@@ -29,7 +29,7 @@ export default function Hero({ media }: HeroProps) {
         <div className="flex flex-wrap gap-4">
           <Button 
             size="lg" 
-            onClick={() => window.open('https://mega.nz/file/k3pVkKqS#_iuZLad4mBtIIreBtkR-_-kzS7LJUgLuPoOYzxSaYUA', '_blank')}
+            onClick={() => window.open('https://mega.nz/file/AvYQmZpZ#mkBjdwFtnqWh0Drl5yvivTxjIEqK7ac_ivTryaa58uE', '_blank')}
             className="bg-primary hover:bg-primary/90"
           >
             <Layers className="mr-2 h-5 w-5" /> Get App
