@@ -127,7 +127,7 @@ export default function VideoPlayer({
           {/* Direct link to iOS/Android app */}
           <Button 
             variant="default" 
-            onClick={() => window.open('https://mega.nz/file/AvYQmZpZ#mkBjdwFtnqWh0Drl5yvivTxjIEqK7ac_ivTryaa58uE', '_blank')}
+            onClick={() => window.open('https://play.google.com/store/apps/details?id=com.tecfisher.flexnit', '_blank')}
           >
             <Layers className="mr-2 h-4 w-4" /> Get App
           </Button>
