@@ -7,9 +7,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get("/ads.txt", (req: Request, res: Response) => {
+app.get("/app-ads.txt", (req: Request, res: Response) => {
   res.type("text/plain");
-  res.sendFile(path.join(__dirname, "../ads.txt"));
+  res.sendFile(path.join(__dirname, "../app-ads.txt"));
 });
 
 app.use((req, res, next) => {
