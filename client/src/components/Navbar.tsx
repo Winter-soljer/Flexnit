@@ -29,12 +29,7 @@ export default function Navbar() {
           </a>
         </Link>
 
-        <div className="flex space-x-6 ml-6">
-          <Link href="/">
-            <a className="text-sm font-medium transition-colors hover:text-primary">
-              Home
-            </a>
-          </Link>
+        <div className="flex space-x-6 ml-6"> 
           <Link href="/movies">
             <a className="text-sm font-medium transition-colors hover:text-primary">
               Movies
